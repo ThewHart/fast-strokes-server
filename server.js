@@ -1,22 +1,29 @@
 const WebSocket = require('ws');
 
-// Use the port Render gives us, or 10000 for local testing
-const port = process.env.PORT || 10000;
-const wss = new WebSocket.Server({ port: port });
+// Use the port Render gives us, or 10000 locally
+const PORT = process.env.PORT || 10000;
+const wss = new WebSocket.Server({ port: PORT });
 
-console.log(`Fast Strokes Server is running on port ${port}`);
+console.log(`Sketchy Friends Server is running on port ${PORT}`);
 
-// When a message comes in from a device
+wss.on('connection', (ws) => {
+  console.log('A family member connected!');
+
+  // When a message comes in from Godot
   ws.on('message', (data) => {
-    console.log('Received: %s', data); // This is what puts it in the Render Log!
-    
-    // Send it to everyone else
+    // Convert the data to a string so we can read it in the logs
+    const message = data.toString();
+    console.log('Received:', message);
+
+    // Send the message to everyone else (the "Broadcast")
     wss.clients.forEach((client) => {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        client.send(data);
+        client.send(message);
       }
     });
   });
 
-    ws.on('close', () => console.log('Someone disconnected.'));
+  ws.on('close', () => {
+    console.log('A family member disconnected.');
+  });
 });
